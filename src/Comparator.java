@@ -1,9 +1,10 @@
-import java.io.*;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ public class Comparator {
      * Asks for the first and second directory.
      * Every file that exists in the first one, but not in the second one, will either be
      * printed on the console or written to a file, depending whether one was provided
+     *
      * @param args When an argument is given, it is interpreted as a path to the output file. When the path is invalid,
      *             the tool probably crashes or something
      * @throws IOException Might happen when the output file cannot be created
@@ -65,6 +67,7 @@ public class Comparator {
     /**
      * Waits for user input and parses it to create a new folder.
      * When it's not a folder, and error is thrown
+     *
      * @return The new folder
      */
     private static File getNewFolder() {
@@ -79,6 +82,7 @@ public class Comparator {
 
     /**
      * Lists all the files in a directory recursively, however hidden directories and files are ignored
+     *
      * @param directory The directory to find the files in
      * @return All the files in that directory recursively
      */
