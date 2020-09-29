@@ -1,7 +1,7 @@
 import java.io.*;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.util.ArrayList;
@@ -68,6 +68,6 @@ public class Comparator {
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("Provided path is not a directory");
         }
-        return new ArrayList<>(FileUtils.listFiles(directory, TrueFileFilter.INSTANCE, FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter("System Volume Information"))));
+        return new ArrayList<>(FileUtils.listFiles(directory, HiddenFileFilter.VISIBLE, HiddenFileFilter.VISIBLE));
     }
 }
