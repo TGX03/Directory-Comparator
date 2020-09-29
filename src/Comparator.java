@@ -11,6 +11,14 @@ import java.util.Scanner;
 
 public class Comparator {
 
+    /**
+     * Asks for the first and second directory.
+     * Every file that exists in the first one, but not in the second one, will either be
+     * printed on the console or written to a file, depending whether one was provided
+     * @param args When an argument is given, it is interpreted as a path to the output file. When the path is invalid,
+     *             the tool probably crashes or something
+     * @throws IOException Might happen when the output file cannot be created
+     */
     public static void main(String[] args) throws IOException {
         File output;
         if (args.length == 0) {
@@ -54,6 +62,11 @@ public class Comparator {
         }
     }
 
+    /**
+     * Waits for user input and parses it to create a new folder.
+     * When it's not a folder, and error is thrown
+     * @return The new folder
+     */
     private static File getNewFolder() {
         Scanner scanner = new Scanner(System.in);
         String directory = scanner.nextLine();
@@ -64,6 +77,11 @@ public class Comparator {
         return newDirectory;
     }
 
+    /**
+     * Lists all the files in a directory recursively, however hidden directories and files are ignored
+     * @param directory The directory to find the files in
+     * @return All the files in that directory recursively
+     */
     private static List<File> getAllFilesFromDirectory(File directory) {
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("Provided path is not a directory");
