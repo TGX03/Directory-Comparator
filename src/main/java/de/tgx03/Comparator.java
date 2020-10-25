@@ -1,3 +1,5 @@
+package de.tgx03;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 
