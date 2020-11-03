@@ -31,7 +31,6 @@ public class Comparator {
         } else {
             output = new File(args[0]);
         }
-        List<File> result = Collections.synchronizedList(new ArrayList<>());
         System.out.println("First directory");
         FileLister firstDirectory = new FileLister(getNewFolder(), false);
         Thread firstThread = new Thread(firstDirectory);
@@ -40,6 +39,7 @@ public class Comparator {
         FileLister secondDirectory = new FileLister(getNewFolder(), false);
         Thread secondThread = new Thread(secondDirectory);
         secondThread.start();
+        List<File> result = Collections.synchronizedList(new ArrayList<>());
         firstThread.join();
         secondThread.join();
         List<File> first = firstDirectory.getFiles();
