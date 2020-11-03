@@ -22,8 +22,9 @@ public class Comparator {
      * @param args When an argument is given, it is interpreted as a path to the output file. When the path is invalid,
      *             the tool probably crashes or something
      * @throws IOException Might happen when the output file cannot be created
+     * @throws InterruptedException Happens when one of the 2 threads finding files hangs up
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         File output;
         if (args.length == 0) {
             output = null;
@@ -32,9 +33,17 @@ public class Comparator {
         }
         List<File> result = Collections.synchronizedList(new ArrayList<>());
         System.out.println("First directory");
-        List<File> first = getAllFilesFromDirectory(getNewFolder());
+        FileLister firstDirectory = new FileLister(getNewFolder(), false);
+        Thread firstThread = new Thread(firstDirectory);
+        firstThread.start();
         System.out.println("Second directory");
-        List<File> second = getAllFilesFromDirectory(getNewFolder());
+        FileLister secondDirectory = new FileLister(getNewFolder(), false);
+        Thread secondThread = new Thread(secondDirectory);
+        secondThread.start();
+        firstThread.join();
+        secondThread.join();
+        List<File> first = firstDirectory.getFiles();
+        List<File> second = secondDirectory.getFiles();
         first.parallelStream().forEach(file -> {
             String fileName = file.getName();
             boolean found = false;
