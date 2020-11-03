@@ -1,8 +1,5 @@
 package de.tgx03;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.HiddenFileFilter;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -89,18 +86,5 @@ public class Comparator {
             throw new IllegalArgumentException("Provided path is not a directory");
         }
         return newDirectory;
-    }
-
-    /**
-     * Lists all the files in a directory recursively, however hidden directories and files are ignored
-     *
-     * @param directory The directory to find the files in
-     * @return All the files in that directory recursively
-     */
-    private static List<File> getAllFilesFromDirectory(File directory) {
-        if (!directory.isDirectory()) {
-            throw new IllegalArgumentException("Provided path is not a directory");
-        }
-        return new ArrayList<>(FileUtils.listFiles(directory, HiddenFileFilter.VISIBLE, HiddenFileFilter.VISIBLE));
     }
 }
