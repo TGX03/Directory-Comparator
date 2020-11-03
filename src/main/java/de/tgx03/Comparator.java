@@ -11,32 +11,79 @@ import java.util.Scanner;
 
 public class Comparator {
 
+    private static final List<File> missingFiles = Collections.synchronizedList(new ArrayList<>());
+    private static FileLister firstDirectory;
+    private static FileLister secondDirectory;
+    private static Thread firstThread;
+    private static Thread secondThread;
+
     /**
-     * Asks for the first and second directory.
-     * Every file that exists in the first one, but not in the second one, will either be
-     * printed on the console or written to a file, depending whether one was provided
+     * Parses 2 directories and either prints or writes to a file the
+     * ones existing in the first directory but not in the second
      *
-     * @param args When an argument is given, it is interpreted as a path to the output file. When the path is invalid,
-     *             the tool probably crashes or something
-     * @throws IOException Might happen when the output file cannot be created
-     * @throws InterruptedException Happens when one of the 2 threads finding files hangs up
+     * @param args Empty or the input and output files. When 1 string provided, treated as output file, when 2 provided, treated as input, for 3 both
+     * @throws IOException When input files couldn't be read or output couldn't be written to
+     * @throws InterruptedException When some weird stuff with parallel execution happens
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        File output;
-        if (args.length == 0) {
-            output = null;
-        } else {
-            output = new File(args[0]);
+        switch (args.length) {
+            case 0,1 -> {
+                getInputDirectories();
+                findMissingFiles();
+                if (args.length == 0) {
+                    outputToConsole();
+                } else {
+                    outputToFile(new File(args[0]));
+                }
+            }
+            case 2,3 -> {
+                createThreads(new File(args[0]), new File(args[1]));
+                findMissingFiles();
+                if (args.length == 2) {
+                    outputToConsole();
+                } else {
+                    outputToFile(new File(args[2]));
+                }
+            }
+            default -> throw new IllegalArgumentException("Invalid number of arguments provided");
         }
-        System.out.println("First directory");
-        FileLister firstDirectory = new FileLister(getNewFolder(), false);
-        Thread firstThread = new Thread(firstDirectory);
+    }
+
+    /**
+     * Gets the input directories from the console
+     * and starts the threads parsing them
+     */
+    private static void getInputDirectories() {
+        System.out.println("First directory:");
+        firstDirectory = new FileLister(getNewFolder(), false);
+        firstThread = new Thread(firstDirectory);
         firstThread.start();
-        System.out.println("Second directory");
-        FileLister secondDirectory = new FileLister(getNewFolder(), false);
-        Thread secondThread = new Thread(secondDirectory);
+        System.out.println("Second directory:");
+        secondDirectory = new FileLister(getNewFolder(), false);
+        secondThread = new Thread(secondDirectory);
         secondThread.start();
-        List<File> result = Collections.synchronizedList(new ArrayList<>());
+    }
+
+    /**
+     * Starts the threads crawling through the directories from provided Files
+     *
+     * @param firstPath The path of the first directory
+     * @param secondPath The path of the second directory
+     */
+    private static void createThreads(File firstPath, File secondPath) {
+        firstDirectory = new FileLister(firstPath, false);
+        firstThread = new Thread(firstDirectory);
+        firstThread.start();
+        secondDirectory = new FileLister(secondPath, false);
+        secondThread = new Thread(secondDirectory);
+        secondThread.start();
+    }
+
+    /**
+     * Compares the 2 previously scanned directories
+     * @throws InterruptedException When some weird stuff with the threads happens (probably when this method gets called multiple times, I dunno)
+     */
+    private static void findMissingFiles() throws InterruptedException {
         firstThread.join();
         secondThread.join();
         List<File> first = firstDirectory.getFiles();
@@ -51,24 +98,37 @@ public class Comparator {
                 }
             }
             if (!found) {
-                result.add(file);
+                missingFiles.add(file);
             }
         });
-        result.sort(java.util.Comparator.naturalOrder());
-        if (output == null) {
-            for (File toPrint : result) {
-                System.out.println(toPrint.getName());
-            }
-        } else {
-            if (!output.createNewFile()) {
-                throw new IOException("Couldn't create the output file");
-            }
+    }
+
+    /**
+     * Prints the missing files to the console
+     */
+    private static void outputToConsole() {
+        missingFiles.sort(java.util.Comparator.naturalOrder());
+        for (File file : missingFiles) {
+            System.out.println(file.getPath());
+        }
+    }
+
+    /**
+     * Writes the paths of the missing files to the provided output file
+     * @param output The file to write the output to
+     * @throws IOException When the file couldn't be written to
+     */
+    private static void outputToFile(File output) throws IOException {
+        missingFiles.sort(java.util.Comparator.naturalOrder());
+        if (output.createNewFile()) {
             BufferedWriter writer = new BufferedWriter(new FileWriter(output));
-            for (File toWrite : result) {
+            for (File toWrite : missingFiles) {
                 writer.append(toWrite.getAbsolutePath());
                 writer.newLine();
             }
             writer.close();
+        } else {
+            throw new IOException("File already exists");
         }
     }
 
